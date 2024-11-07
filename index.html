@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Scraper</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-box">
+            <div class="chat-message bot-message">Hi! I'm an email scraper bot. Please enter a website URL below:</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="url-input" placeholder="Enter website URL" />
+            <button id="scrape-btn">Scrape Emails</button>
+        </div>
+        <div class="chat-result" id="result"></div>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            $('#scrape-btn').click(function(){
+                let url = $('#url-input').val().trim();
+                if(url) {
+                    $('#result').html('<div class="chat-message bot-message">Scraping emails...</div>'); // Loading state
+
+                    $.ajax({
+                        url: '/scrape',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ "url": url }),
+                        success: function(response) {
+                            if(response.emails && response.emails.length > 0) {
+                                let emails = response.emails.join('<br/>');
+                                $('#result').html('<div class="chat-message bot-message">Found the following emails:<br/>' + emails + '</div>');
+                            } else {
+                                $('#result').html('<div class="chat-message bot-message">' + response.message + '</div>');
+                            }
+                        },
+                        error: function(error) {
+                            $('#result').html('<div class="chat-message bot-message">Error: ' + error.responseJSON.error + '</div>');
+                        }
+                    });
+                } else {
+                    $('#result').html('<div class="chat-message bot-message">Please enter a valid URL.</div>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
